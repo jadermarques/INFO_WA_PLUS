@@ -7,8 +7,10 @@ from src.app.infrastructure.db import init_db
 from src.app.infrastructure.repositories import (
     modelo_llm_add,
     modelo_llm_list,
+    modelo_llm_delete_all,
     base_conhecimento_add,
     base_conhecimento_list,
+    base_conhecimento_delete_all,
 )
 from src.app.infrastructure.backup import run_backup
 
@@ -67,6 +69,28 @@ def backup(dest: Path = typer.Option("./backups", help="Diretório de destino"))
     """Gera uma cópia do arquivo de banco de dados."""
     path = run_backup(str(dest))
     print({"backup": path})
+
+
+@app.command("purge")
+def purge():
+    """Apaga TODOS os registros das tabelas (cuidado!)."""
+    modelo_llm_delete_all()
+    base_conhecimento_delete_all()
+    print("[yellow]Tabelas limpas.[/yellow]")
+
+
+@app.command("seed")
+def seed():
+    """Popula o banco com alguns registros de exemplo."""
+    # modelos
+    modelo_llm_add("OPENAI", "gpt-4o-mini", "sk-demo-1", 1)
+    modelo_llm_add("OPENAI", "gpt-4o", "sk-demo-2", 0)
+    modelo_llm_add("GEMINI", "1.5-flash", "sk-demo-3", 1)
+    # bases
+    base_conhecimento_add("FAQ", "./docs/faq.txt", "Perguntas frequentes", 1)
+    base_conhecimento_add("Políticas", "./docs/politicas.pdf", "Documentos de políticas", 1)
+    base_conhecimento_add("Exemplos", "./dados/exemplos.txt", "Amostras de conversas", 0)
+    print("[green]Seed concluído.[/green]")
 
 
 if __name__ == "__main__":

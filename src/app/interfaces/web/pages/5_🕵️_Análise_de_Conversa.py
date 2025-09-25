@@ -11,8 +11,6 @@ from src.app.infrastructure.agents import pipeline_analise
 
 st.header("🕵️ Análise de Conversa")
 
-HAS_NEW_NAV = hasattr(st, "navigation") and hasattr(st, "Page")
-
 def render_importar():
     st.subheader("Importar conversa (upload)")
     uploaded = st.file_uploader("Arquivo de conversa (.txt)", type=["txt"]) 
@@ -42,26 +40,14 @@ def render_relatorios():
     st.subheader("Relatórios (mock)")
     st.write("Lista de relatórios gerados aparecerá aqui.")
 
-if HAS_NEW_NAV:
-    submenu = st.selectbox(
-        "Submenus de Análise",
-        ["Importar", "Processar", "Prompt", "Relatórios"],
-        key="submenu_analise_select",
-    )
-    if submenu == "Importar":
-        render_importar()
-    elif submenu == "Processar":
-        render_processar()
-    elif submenu == "Prompt":
-        render_prompt()
-    elif submenu == "Relatórios":
-        render_relatorios()
-else:
-    with st.expander("Importar", expanded=True):
-        render_importar()
-    with st.expander("Processar", expanded=False):
-        render_processar()
-    with st.expander("Prompt", expanded=False):
-        render_prompt()
-    with st.expander("Relatórios", expanded=False):
-        render_relatorios()
+tab_importar, tab_processar, tab_prompt, tab_relatorios = st.tabs(
+    ["Importar", "Processar", "Prompt", "Relatórios"]
+)
+with tab_importar:
+    render_importar()
+with tab_processar:
+    render_processar()
+with tab_prompt:
+    render_prompt()
+with tab_relatorios:
+    render_relatorios()

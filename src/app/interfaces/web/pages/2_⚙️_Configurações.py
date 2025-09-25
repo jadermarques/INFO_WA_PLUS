@@ -15,8 +15,6 @@ st.header("⚙️ Configurações")
 st.write(f"DB_PATH atual: `{settings.db_path}`")
 st.write("Ajuste variáveis via arquivo `.env`.")
 
-HAS_NEW_NAV = hasattr(st, "navigation") and hasattr(st, "Page")
-
 def render_mcp():
 	st.subheader("🧩 Configurações MCP")
 	st.info("Defina parâmetros de conexões MCP (stub)")
@@ -43,22 +41,10 @@ def render_backup():
 			except Exception as e:
 				st.error(f"Erro no backup: {e}")
 
-if HAS_NEW_NAV:
-	submenu = st.selectbox(
-		"Submenus de Configurações",
-		["MCP", "Layout do Arquivo", "Backup"],
-		key="submenu_config_select",
-	)
-	if submenu == "MCP":
-		render_mcp()
-	elif submenu == "Layout do Arquivo":
-		render_layout()
-	elif submenu == "Backup":
-		render_backup()
-else:
-	with st.expander("🧩 MCP", expanded=True):
-		render_mcp()
-	with st.expander("🧾 Layout do Arquivo", expanded=True):
-		render_layout()
-	with st.expander("💾 Backup", expanded=True):
-		render_backup()
+tab_mcp, tab_layout, tab_backup = st.tabs(["MCP", "Layout do Arquivo", "Backup"])
+with tab_mcp:
+	render_mcp()
+with tab_layout:
+	render_layout()
+with tab_backup:
+	render_backup()

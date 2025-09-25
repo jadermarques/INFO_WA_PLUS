@@ -16,8 +16,6 @@ from src.app.infrastructure.agents import (
 
 st.header("🧠 Agentes & Crew")
 
-HAS_NEW_NAV = hasattr(st, "navigation") and hasattr(st, "Page")
-
 def render_testes():
 	st.write("Teste individual de agentes (stubs)")
 	texto = st.text_area("Texto de entrada", "Olá, obrigado pelo atendimento. Ainda não resolvido.")
@@ -45,34 +43,18 @@ def render_flows():
 def render_processos():
 	st.info("Processos orquestrados (stub)")
 
-if HAS_NEW_NAV:
-	submenu = st.selectbox(
-		"Submenus de Agentes",
-		["Testes", "Tarefas", "Ferramentas MCP", "Crews", "Flows", "Processos"],
-		key="submenu_agentes_select",
-	)
-	if submenu == "Testes":
-		render_testes()
-	elif submenu == "Tarefas":
-		render_tarefas()
-	elif submenu == "Ferramentas MCP":
-		render_ferramentas()
-	elif submenu == "Crews":
-		render_crews()
-	elif submenu == "Flows":
-		render_flows()
-	elif submenu == "Processos":
-		render_processos()
-else:
-	with st.expander("Testes", expanded=True):
-		render_testes()
-	with st.expander("Tarefas", expanded=False):
-		render_tarefas()
-	with st.expander("Ferramentas MCP", expanded=False):
-		render_ferramentas()
-	with st.expander("Crews", expanded=False):
-		render_crews()
-	with st.expander("Flows", expanded=False):
-		render_flows()
-	with st.expander("Processos", expanded=False):
-		render_processos()
+tab_testes, tab_tarefas, tab_ferramentas, tab_crews, tab_flows, tab_processos = st.tabs(
+	["Testes", "Tarefas", "Ferramentas MCP", "Crews", "Flows", "Processos"]
+)
+with tab_testes:
+	render_testes()
+with tab_tarefas:
+	render_tarefas()
+with tab_ferramentas:
+	render_ferramentas()
+with tab_crews:
+	render_crews()
+with tab_flows:
+	render_flows()
+with tab_processos:
+	render_processos()

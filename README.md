@@ -5,24 +5,32 @@ Projeto de análise de conversas do WhatsApp com GUI (Streamlit) e CLI (Typer). 
 ## Setup rápido
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-# Instalação rápida p/ testes (sem GUI):
-pip install -r requirements-core.txt
-# Para GUI (Streamlit), depois instale o extra:
-pip install -r requirements.txt
-cp .env.example .env  # ajuste DB_PATH se necessário
+make setup          # cria venv, instala dependências e copia .env.example -> .env
+make db-init        # inicializa tabelas
+make gui            # inicia a GUI (usa .venv/bin/streamlit)
 ```
 
 ## Comandos
 
 ```bash
-make db-init     # cria tabelas no SQLite
-make gui         # inicia Streamlit multipage (requer requirements.txt)
-make cli         # mostra ajuda da CLI
-make backup      # executa backup do arquivo .db
-make install-core  # instala apenas dependências de core (sem GUI)
-make setup         # executa setup completo (venv + deps + .env)
+make setup         # venv + deps + .env
+make install       # reinstala deps do requirements.txt
+make install-core  # instala apenas dependências core
+make db-init       # cria tabelas no SQLite
+make gui           # inicia Streamlit (usa venv)
+make cli           # mostra ajuda da CLI
+make backup        # executa backup do arquivo .db
+make test          # roda testes
+```
+
+CLI (exemplos):
+```bash
+.venv/bin/python -m src.app.interfaces.cli.app modelo-ia-add --provedor OPENAI --modelo gpt-4o-mini --api-key sk-... --status 1
+.venv/bin/python -m src.app.interfaces.cli.app modelo-ia-list
+.venv/bin/python -m src.app.interfaces.cli.app base-add --nome "Base Teste" --arquivo ./conversa1.txt --descricao "Exemplo" --status 1
+.venv/bin/python -m src.app.interfaces.cli.app base-list
+.venv/bin/python -m src.app.interfaces.cli.app seed   # popula dados de exemplo
+.venv/bin/python -m src.app.interfaces.cli.app purge  # apaga todos os registros
 ```
 
 ## Estrutura
@@ -51,9 +59,10 @@ python -m src.app.interfaces.cli.app --help
 
 Atalho (com GUI):
 ```bash
-make setup          # cria venv, instala core + GUI e copia .env
+make setup
 make gui
 ```
 
 ## Compatibilidade Streamlit
-- Navegação preferida usa `st.Page` + `st.navigation` (requer Streamlit recente). Foi adicionado um fallback automático para versões antigas usando `st.sidebar.page_link`.
+- Quando a pasta `pages/` existe, a navegação usa `st.page_link` (multipage nativo) e não chama `st.navigation` (evitando warnings).
+- Se não houver `pages/`, a app usa `st.navigation` com fallback por links.
