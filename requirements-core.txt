@@ -3,3 +3,4 @@ typer>=0.12
 rich>=13.7
 pytest>=8.3
 ruff>=0.6
+openai>=1.40.0

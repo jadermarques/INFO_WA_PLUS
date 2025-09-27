@@ -12,6 +12,7 @@ from src.app.infrastructure.repositories import (
     modelo_llm_add, modelo_llm_list, modelo_llm_update, modelo_llm_delete,
     base_conhecimento_add, base_conhecimento_list, base_conhecimento_update, base_conhecimento_delete
 )
+from src.app.infrastructure.providers import test_llm_connection
 
 st.header("🗂️ Cadastros")
 
@@ -67,6 +68,7 @@ def render_modelos():
     # Preparar linhas amigáveis
     friendly_rows = []
     by_id = {r["modl_id"]: r for r in data}
+    status_map = st.session_state.setdefault("llm_conn_status", {})  # {id: str}
     # recuperar preseleção da sessão
     pre_ids = set(st.session_state.get("llm_preselect_ids", []))
     for r in filtered_data:
@@ -78,6 +80,7 @@ def render_modelos():
             "Modelo": r["modl_modelo_llm"],
             "API Key": api_val,
             "Ativo": bool(int(r.get("modl_status", 0)) == 1),
+            "Status": status_map.get(int(r["modl_id"]), "—"),
         }
         friendly_rows.append(rec)
 
@@ -92,6 +95,7 @@ def render_modelos():
             "Modelo": st.column_config.TextColumn("Modelo"),
             "API Key": st.column_config.TextColumn("API Key", disabled=not show_keys),
             "Ativo": st.column_config.CheckboxColumn("Ativo"),
+            "Status": st.column_config.TextColumn("Status", disabled=True),
         },
         hide_index=True,
         key="llm_table",
@@ -163,6 +167,45 @@ def render_modelos():
     if st.button("Limpar seleção", key="llm_clear_sel"):
         st.session_state["llm_preselect_ids"] = []
         st.rerun()
+
+    # Teste de conexão com LLMs (batch)
+    tc1, tc2, tc3 = st.columns([2, 2, 2])
+    with tc1:
+        if st.button("Testar conexão (selecionados)", key="llm_test_selected"):
+            sel_ids = [int(r["ID"]) for r in edited if r.get("Selecionar")]
+            if not sel_ids:
+                st.info("Selecione ao menos um registro para testar.")
+            else:
+                ok_count = 0
+                fail_count = 0
+                for rid in sel_ids:
+                    orig = by_id.get(rid)
+                    if not orig:
+                        continue
+                    prov = orig.get("modl_provedor", "")
+                    modl = orig.get("modl_modelo_llm", "")
+                    keyv = orig.get("modl_api_key", "")  # usa original mesmo se oculto
+                    ok, detail = test_llm_connection(prov, modl, keyv)
+                    status_map[rid] = "✅ OK" if ok else "❌ Falha"
+                st.session_state["llm_conn_status"] = status_map
+                st.rerun()
+    with tc2:
+        if st.button("Testar conexão (todos filtrados)", key="llm_test_all_filtered"):
+            ok_count = 0
+            fail_count = 0
+            for r in filtered_data:
+                rid = int(r.get("modl_id"))
+                prov = r.get("modl_provedor", "")
+                modl = r.get("modl_modelo_llm", "")
+                keyv = r.get("modl_api_key", "")
+                ok, detail = test_llm_connection(prov, modl, keyv)
+                status_map[rid] = "✅ OK" if ok else "❌ Falha"
+            st.session_state["llm_conn_status"] = status_map
+            st.rerun()
+    with tc3:
+        if st.button("Limpar status de conexão", key="llm_test_clear"):
+            st.session_state["llm_conn_status"] = {}
+            st.rerun()
 
     if st.session_state.get("llm_delete_batch"):
         ids = st.session_state["llm_delete_batch"]
